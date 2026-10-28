@@ -19,7 +19,18 @@ func main() {
 		}
 
 		cmd = strings.TrimSpace(cmd)
+		if !processCmd(cmd) {
+			return
+		}
 
 		fmt.Print(cmd, ": command not found\n")
 	}
+}
+
+func processCmd(cmd string) bool {
+	if cmd == "exit" {
+		return false
+	}
+
+	return true
 }
