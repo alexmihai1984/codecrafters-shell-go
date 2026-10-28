@@ -19,17 +19,22 @@ func main() {
 		}
 
 		cmd = strings.TrimSpace(cmd)
-		if !processCmd(cmd) {
+		if !handleCmd(cmd) {
 			return
 		}
-
-		fmt.Print(cmd, ": command not found\n")
 	}
 }
 
-func processCmd(cmd string) bool {
-	if cmd == "exit" {
+func handleCmd(cmd string) bool {
+	var command command = parseCmd(cmd)
+	if command.verb == "exit" {
 		return false
+	}
+
+	if command.verb == "echo" {
+		fmt.Println(strings.Join(command.args, " "))
+	} else {
+		fmt.Print(cmd, ": command not found\n")
 	}
 
 	return true
