@@ -10,14 +10,16 @@ import (
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Print("$ ")
-	cmd, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Println("Error reading input:", err)
-		return
+	for {
+		fmt.Print("$ ")
+		cmd, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error reading input:", err)
+			return
+		}
+
+		cmd = strings.TrimSpace(cmd)
+
+		fmt.Print(cmd, ": command not found\n")
 	}
-
-	cmd = strings.TrimSpace(cmd)
-
-	fmt.Print(cmd, ": command not found\n")
 }
