@@ -11,6 +11,7 @@ type command struct {
 var executables = map[string]executable{
 	"echo": echo{},
 	"type": typeCommand{},
+	"exit": exit{},
 }
 
 func parseCmd(cmd string) command {
@@ -28,8 +29,8 @@ func parseCmd(cmd string) command {
 	if !ok {
 		return command{
 			parts[0],
-			nil,
-			unknown{
+			parts[1:],
+			program{
 				parts[0],
 			},
 		}

@@ -28,10 +28,6 @@ func main() {
 func handleCmd(cmd string) bool {
 	var command command = parseCmd(cmd)
 
-	if command.verb == "exit" {
-		return false
-	}
-
 	command.execute()
 
 	return true
