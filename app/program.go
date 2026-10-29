@@ -15,6 +15,7 @@ func (p program) execute(args []string) {
 		fmt.Print(p.name, ": command not found\n")
 	}
 	cmd := exec.Command(filepath, args...)
+	cmd.Args[0] = p.name
 
 	output, err := cmd.Output()
 	if err != nil {
