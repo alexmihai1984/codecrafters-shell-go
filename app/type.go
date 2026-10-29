@@ -6,11 +6,11 @@ import (
 
 type typeCommand struct{}
 
-var builtins = map[string]bool{
-	"echo": true,
-	"exit": true,
-	"type": true,
-}
+// var builtins = map[string]bool{
+// 	"echo": true,
+// 	"exit": true,
+// 	"type": true,
+// }
 
 func isBuiltin(cmd string) bool {
 	_, ok := builtins[cmd]

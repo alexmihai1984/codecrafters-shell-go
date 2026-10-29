@@ -8,10 +8,11 @@ type command struct {
 	executable executable
 }
 
-var executables = map[string]executable{
+var builtins = map[string]executable{
 	"echo": echo{},
-	"type": typeCommand{},
 	"exit": exit{},
+	"pwd":  pwd{},
+	"type": typeCommand{},
 }
 
 func parseCmd(cmd string) command {
@@ -25,7 +26,7 @@ func parseCmd(cmd string) command {
 		}
 	}
 
-	executable, ok := executables[parts[0]]
+	executable, ok := builtins[parts[0]]
 	if !ok {
 		return command{
 			parts[0],
