@@ -20,7 +20,7 @@ var builtins = map[string]executable{
 }
 
 func parseCmd(cmd string) command {
-	parts := processCommand(cmd) //strings.Fields(cmd)
+	parts := processCommand(cmd)
 
 	if len(parts) == 0 {
 		return command{
@@ -53,14 +53,20 @@ func processCommand(cmd string) []string {
 	var currentWord strings.Builder
 
 	isSingleQuotesEscaped := false
+	isDoubleQuotesEscaped := false
 	for _, char := range cmd {
-		if char == '\'' {
+		if char == '"' && !isSingleQuotesEscaped {
+			isDoubleQuotesEscaped = !isDoubleQuotesEscaped
+			continue
+		}
+
+		if char == '\'' && !isDoubleQuotesEscaped {
 			isSingleQuotesEscaped = !isSingleQuotesEscaped
 			continue
 		}
 
 		if unicode.IsSpace(char) {
-			if isSingleQuotesEscaped {
+			if isSingleQuotesEscaped || isDoubleQuotesEscaped {
 				currentWord.WriteRune(char)
 				continue
 			} else if currentWord.Len() == 0 {
