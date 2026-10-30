@@ -20,7 +20,7 @@ var builtins = map[string]executable{
 }
 
 func parseCmd(cmd string) command {
-	parts := processCommand(cmd)
+	parts := parseCommand(cmd)
 
 	if len(parts) == 0 {
 		return command{
@@ -48,36 +48,44 @@ func parseCmd(cmd string) command {
 	}
 }
 
-func processCommand(cmd string) []string {
+func parseCommand(cmd string) []string {
 	var res []string
 	var currentWord strings.Builder
 
 	isSingleQuotesEscaped := false
 	isDoubleQuotesEscaped := false
+	isBackslashEscaped := false
 	for _, char := range cmd {
-		if char == '"' && !isSingleQuotesEscaped {
+		if char == '\\' && !isSingleQuotesEscaped && !isDoubleQuotesEscaped && !isBackslashEscaped {
+			isBackslashEscaped = true
+			continue
+		}
+
+		if char == '"' && !isSingleQuotesEscaped && !isBackslashEscaped {
 			isDoubleQuotesEscaped = !isDoubleQuotesEscaped
 			continue
 		}
 
-		if char == '\'' && !isDoubleQuotesEscaped {
+		if char == '\'' && !isDoubleQuotesEscaped && !isBackslashEscaped {
 			isSingleQuotesEscaped = !isSingleQuotesEscaped
 			continue
 		}
 
 		if unicode.IsSpace(char) {
-			if isSingleQuotesEscaped || isDoubleQuotesEscaped {
+			if isSingleQuotesEscaped || isDoubleQuotesEscaped || isBackslashEscaped {
 				currentWord.WriteRune(char)
-				continue
 			} else if currentWord.Len() == 0 {
 				// ignore
-				continue
 			} else {
 				res = append(res, currentWord.String())
 				currentWord.Reset()
 			}
 		} else {
 			currentWord.WriteRune(char)
+		}
+
+		if isBackslashEscaped {
+			isBackslashEscaped = false
 		}
 	}
 
