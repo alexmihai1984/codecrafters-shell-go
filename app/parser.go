@@ -11,9 +11,10 @@ type parser struct {
 }
 
 type parserState struct {
-	isSingleQuotesEscaped bool
-	isDoubleQuotesEscaped bool
-	isBackslashEscaped    bool
+	isSingleQuotesEscaped            bool
+	isDoubleQuotesEscaped            bool
+	isBackslashEscaped               bool
+	isBackslashInDoubleQuotesEscaped bool
 
 	parts       []string
 	currentWord strings.Builder
@@ -39,9 +40,27 @@ func (p *parser) parse() []string {
 }
 
 func (p *parser) processChar(c rune) {
-	if c == '\\' && !p.isEscaped() {
-		p.state.isBackslashEscaped = true
-		return
+	if c == '\\' {
+		if !p.isEscaped() {
+			p.state.isBackslashEscaped = true
+			return
+		} else if p.state.isDoubleQuotesEscaped {
+			p.state.isBackslashInDoubleQuotesEscaped = true
+			return
+		}
+	}
+
+	if p.state.isBackslashInDoubleQuotesEscaped {
+		if c == '"' || c == '\\' || c == '$' || c == '`' {
+			p.state.currentWord.WriteRune(c)
+			return
+		} else if c == '\n' {
+			return
+		} else {
+			p.state.currentWord.WriteRune('\\')
+		}
+
+		p.state.isBackslashInDoubleQuotesEscaped = false
 	}
 
 	if c == '"' && !p.state.isSingleQuotesEscaped && !p.state.isBackslashEscaped {
