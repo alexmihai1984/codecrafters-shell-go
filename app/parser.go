@@ -21,16 +21,21 @@ type parserState struct {
 
 func buildParser(cmd string) parser {
 	return parser{
-		cmd,
-		parserState{},
+		cmd: cmd,
 	}
 }
 
-func (p parser) parse() []string {
+func (p *parser) parse() []string {
 	for _, c := range p.cmd {
 		p.processChar(c)
 	}
 
+	if p.state.currentWord.Len() > 0 {
+		p.state.parts = append(p.state.parts, p.state.currentWord.String())
+		p.state.currentWord.Reset()
+	}
+
+	// fmt.Println("parts:", p.state.parts)
 	return p.state.parts
 	// var res []string
 	// var currentWord strings.Builder
@@ -74,7 +79,9 @@ func (p parser) parse() []string {
 	// return res
 }
 
-func (p parser) processChar(c rune) {
+func (p *parser) processChar(c rune) {
+	// fmt.Println("char:", string(c))
+	// fmt.Println("state:", p.state)
 	if c == '\\' && !p.isEscaped() {
 		p.state.isBackslashEscaped = true
 		return
@@ -94,11 +101,13 @@ func (p parser) processChar(c rune) {
 		if p.isEscaped() {
 			p.state.currentWord.WriteRune(c)
 		} else if p.state.currentWord.Len() > 0 {
+			// fmt.Println("word done")
 			p.state.parts = append(p.state.parts, p.state.currentWord.String())
 			p.state.currentWord.Reset()
 		}
 	} else {
 		p.state.currentWord.WriteRune(c)
+		// fmt.Println("writing letter")
 	}
 
 	if p.state.isBackslashEscaped {
@@ -106,7 +115,7 @@ func (p parser) processChar(c rune) {
 	}
 }
 
-func (p parser) isEscaped() bool {
+func (p *parser) isEscaped() bool {
 	return p.state.isSingleQuotesEscaped ||
 		p.state.isDoubleQuotesEscaped ||
 		p.state.isBackslashEscaped
