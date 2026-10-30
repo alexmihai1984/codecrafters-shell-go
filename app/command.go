@@ -74,9 +74,7 @@ func parseCommand(cmd string) []string {
 		if unicode.IsSpace(char) {
 			if isSingleQuotesEscaped || isDoubleQuotesEscaped || isBackslashEscaped {
 				currentWord.WriteRune(char)
-			} else if currentWord.Len() == 0 {
-				// ignore
-			} else {
+			} else if currentWord.Len() > 0 {
 				res = append(res, currentWord.String())
 				currentWord.Reset()
 			}
