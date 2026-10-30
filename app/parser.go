@@ -60,6 +60,8 @@ func (p *parser) processChar(c rune) {
 			return
 		} else {
 			p.state.currentWord.WriteRune('\\')
+			p.state.currentWord.WriteRune(c)
+			return
 		}
 	}
 
