@@ -44,7 +44,7 @@ func (p *parser) processChar(c rune) {
 		if !p.isEscaped() {
 			p.state.isBackslashEscaped = true
 			return
-		} else if p.state.isDoubleQuotesEscaped {
+		} else if p.state.isDoubleQuotesEscaped && !p.state.isBackslashInDoubleQuotesEscaped {
 			p.state.isBackslashInDoubleQuotesEscaped = true
 			return
 		}
