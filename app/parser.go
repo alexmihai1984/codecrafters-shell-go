@@ -51,6 +51,8 @@ func (p *parser) processChar(c rune) {
 	}
 
 	if p.state.isBackslashInDoubleQuotesEscaped {
+		p.state.isBackslashInDoubleQuotesEscaped = false
+
 		if c == '"' || c == '\\' || c == '$' || c == '`' {
 			p.state.currentWord.WriteRune(c)
 			return
@@ -59,8 +61,6 @@ func (p *parser) processChar(c rune) {
 		} else {
 			p.state.currentWord.WriteRune('\\')
 		}
-
-		p.state.isBackslashInDoubleQuotesEscaped = false
 	}
 
 	if c == '"' && !p.state.isSingleQuotesEscaped && !p.state.isBackslashEscaped {
