@@ -1,10 +1,5 @@
 package main
 
-import (
-	"strings"
-	"unicode"
-)
-
 type command struct {
 	verb       string
 	args       []string
@@ -20,7 +15,9 @@ var builtins = map[string]executable{
 }
 
 func parseCmd(cmd string) command {
-	parts := parseCommand(cmd)
+	// parts := parseCommand(cmd)
+	parser := buildParser(cmd)
+	parts := parser.parse()
 
 	if len(parts) == 0 {
 		return command{
@@ -46,52 +43,6 @@ func parseCmd(cmd string) command {
 		parts[1:],
 		executable,
 	}
-}
-
-func parseCommand(cmd string) []string {
-	var res []string
-	var currentWord strings.Builder
-
-	isSingleQuotesEscaped := false
-	isDoubleQuotesEscaped := false
-	isBackslashEscaped := false
-	for _, char := range cmd {
-		if char == '\\' && !isSingleQuotesEscaped && !isDoubleQuotesEscaped && !isBackslashEscaped {
-			isBackslashEscaped = true
-			continue
-		}
-
-		if char == '"' && !isSingleQuotesEscaped && !isBackslashEscaped {
-			isDoubleQuotesEscaped = !isDoubleQuotesEscaped
-			continue
-		}
-
-		if char == '\'' && !isDoubleQuotesEscaped && !isBackslashEscaped {
-			isSingleQuotesEscaped = !isSingleQuotesEscaped
-			continue
-		}
-
-		if unicode.IsSpace(char) {
-			if isSingleQuotesEscaped || isDoubleQuotesEscaped || isBackslashEscaped {
-				currentWord.WriteRune(char)
-			} else if currentWord.Len() > 0 {
-				res = append(res, currentWord.String())
-				currentWord.Reset()
-			}
-		} else {
-			currentWord.WriteRune(char)
-		}
-
-		if isBackslashEscaped {
-			isBackslashEscaped = false
-		}
-	}
-
-	if currentWord.Len() > 0 {
-		res = append(res, currentWord.String())
-	}
-
-	return res
 }
 
 func (c command) execute() {
