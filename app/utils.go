@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -21,4 +22,14 @@ func findInPath(cmd string) string {
 	}
 
 	return ""
+}
+
+func getWorkingDirectory() string {
+	pwd, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error getting working directory:", err)
+		os.Exit(1)
+	}
+
+	return pwd
 }

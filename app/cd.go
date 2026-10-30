@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 type cd struct{}
@@ -13,16 +14,32 @@ func (c cd) execute(args []string) {
 		return
 	}
 
-	info, err := os.Stat(args[0])
+	path := args[0]
+
+	if strings.HasPrefix(path, "~") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			fmt.Println("cd: Could not get home directory")
+			return
+		}
+
+		path = strings.Replace(path, "~", home, 1)
+	}
+
+	if !strings.HasPrefix(path, "~") && !strings.HasPrefix(path, ".") && !strings.HasPrefix(path, "/") {
+		path = getWorkingDirectory() + "/" + path
+	}
+
+	info, err := os.Stat(path)
 	if err != nil {
-		fmt.Print("cd: ", args[0], ": No such file or directory\n")
+		fmt.Print("cd: ", path, ": No such file or directory\n")
 		return
 	}
 
 	if !info.IsDir() {
-		fmt.Print("cd: ", args[0], ": Not a directory\n")
+		fmt.Print("cd: ", path, ": Not a directory\n")
 		return
 	}
 
-	os.Chdir(args[0])
+	os.Chdir(path)
 }
