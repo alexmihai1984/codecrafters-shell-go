@@ -35,53 +35,10 @@ func (p *parser) parse() []string {
 		p.state.currentWord.Reset()
 	}
 
-	// fmt.Println("parts:", p.state.parts)
 	return p.state.parts
-	// var res []string
-	// var currentWord strings.Builder
-	//
-	// for _, char := range p.cmd {
-	// 	if char == '\\' && !isSingleQuotesEscaped && !isDoubleQuotesEscaped && !isBackslashEscaped {
-	// 		isBackslashEscaped = true
-	// 		continue
-	// 	}
-	//
-	// 	if char == '"' && !isSingleQuotesEscaped && !isBackslashEscaped {
-	// 		isDoubleQuotesEscaped = !isDoubleQuotesEscaped
-	// 		continue
-	// 	}
-	//
-	// 	if char == '\'' && !isDoubleQuotesEscaped && !isBackslashEscaped {
-	// 		isSingleQuotesEscaped = !isSingleQuotesEscaped
-	// 		continue
-	// 	}
-	//
-	// 	if unicode.IsSpace(char) {
-	// 		if isSingleQuotesEscaped || isDoubleQuotesEscaped || isBackslashEscaped {
-	// 			currentWord.WriteRune(char)
-	// 		} else if currentWord.Len() > 0 {
-	// 			res = append(res, currentWord.String())
-	// 			currentWord.Reset()
-	// 		}
-	// 	} else {
-	// 		currentWord.WriteRune(char)
-	// 	}
-	//
-	// 	if isBackslashEscaped {
-	// 		isBackslashEscaped = false
-	// 	}
-	// }
-	//
-	// if currentWord.Len() > 0 {
-	// 	res = append(res, currentWord.String())
-	// }
-	//
-	// return res
 }
 
 func (p *parser) processChar(c rune) {
-	// fmt.Println("char:", string(c))
-	// fmt.Println("state:", p.state)
 	if c == '\\' && !p.isEscaped() {
 		p.state.isBackslashEscaped = true
 		return
@@ -101,13 +58,11 @@ func (p *parser) processChar(c rune) {
 		if p.isEscaped() {
 			p.state.currentWord.WriteRune(c)
 		} else if p.state.currentWord.Len() > 0 {
-			// fmt.Println("word done")
 			p.state.parts = append(p.state.parts, p.state.currentWord.String())
 			p.state.currentWord.Reset()
 		}
 	} else {
 		p.state.currentWord.WriteRune(c)
-		// fmt.Println("writing letter")
 	}
 
 	if p.state.isBackslashEscaped {

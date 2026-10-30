@@ -15,7 +15,6 @@ var builtins = map[string]executable{
 }
 
 func parseCmd(cmd string) command {
-	// parts := parseCommand(cmd)
 	parser := buildParser(cmd)
 	parts := parser.parse()
 
