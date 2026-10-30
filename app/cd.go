@@ -17,12 +17,7 @@ func (c cd) execute(args []string) {
 	path := args[0]
 
 	if strings.HasPrefix(path, "~") {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			fmt.Println("cd: Could not get home directory")
-			return
-		}
-
+		home := getHomeDirectory()
 		path = strings.Replace(path, "~", home, 1)
 	}
 

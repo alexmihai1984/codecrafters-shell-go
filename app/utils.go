@@ -33,3 +33,13 @@ func getWorkingDirectory() string {
 
 	return pwd
 }
+
+func getHomeDirectory() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("cd: Could not get home directory")
+		os.Exit(1)
+	}
+
+	return home
+}
