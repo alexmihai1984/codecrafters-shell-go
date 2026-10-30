@@ -9,6 +9,7 @@ type command struct {
 }
 
 var builtins = map[string]executable{
+	"cd":   cd{},
 	"echo": echo{},
 	"exit": exit{},
 	"pwd":  pwd{},
