@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"os"
 	"os/exec"
 )
 
@@ -27,8 +26,8 @@ func (p program) execute(args []string) {
 	}
 	cmd := exec.Command(filepath, args...)
 	cmd.Args[0] = p.name
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
+	cmd.Stderr = p.stderr
+	cmd.Stdout = p.stdout
 
 	cmd.Run()
 }

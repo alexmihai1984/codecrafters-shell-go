@@ -134,7 +134,6 @@ func (p *parser) processChar(c rune) {
 	if p.state.isStdRedirectMaybe {
 		p.state.isStdRedirectMaybe = false
 		p.state.currentWord.WriteRune('1')
-		return
 	}
 
 	if c == '1' && !p.isEscaped() {
