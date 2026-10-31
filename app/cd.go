@@ -2,15 +2,26 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 )
 
-type cd struct{}
+type cd struct {
+	shell
+}
+
+func (c *cd) setStdout(stdout io.Writer) {
+	c.stdout = stdout
+}
+
+func (c *cd) setStderr(stderr io.Writer) {
+	c.stderr = stderr
+}
 
 func (c cd) execute(args []string) {
 	if len(args) > 1 {
-		fmt.Println("cd: too many arguments")
+		fmt.Fprintln(c.stderr, "cd: too many arguments")
 		return
 	}
 
@@ -27,12 +38,12 @@ func (c cd) execute(args []string) {
 
 	info, err := os.Stat(path)
 	if err != nil {
-		fmt.Print("cd: ", path, ": No such file or directory\n")
+		fmt.Fprint(c.stderr, "cd: ", path, ": No such file or directory\n")
 		return
 	}
 
 	if !info.IsDir() {
-		fmt.Print("cd: ", path, ": Not a directory\n")
+		fmt.Fprint(c.stderr, "cd: ", path, ": Not a directory\n")
 		return
 	}
 

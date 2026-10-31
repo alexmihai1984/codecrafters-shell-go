@@ -2,18 +2,28 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 )
 
 type program struct {
+	shell
 	name string
+}
+
+func (p *program) setStdout(stdout io.Writer) {
+	p.stdout = stdout
+}
+
+func (p *program) setStderr(stderr io.Writer) {
+	p.stderr = stderr
 }
 
 func (p program) execute(args []string) {
 	filepath := findInPath(p.name)
 	if filepath == "" {
-		fmt.Print(p.name, ": command not found\n")
+		fmt.Fprint(p.stderr, p.name, ": command not found\n")
 	}
 	cmd := exec.Command(filepath, args...)
 	cmd.Args[0] = p.name

@@ -2,17 +2,22 @@ package main
 
 import (
 	"fmt"
+	"io"
 )
 
-type typeCommand struct{}
+type typeCommand struct {
+	shell
+}
 
-// var builtins = map[string]bool{
-// 	"echo": true,
-// 	"exit": true,
-// 	"type": true,
-// }
+func (t *typeCommand) setStdout(stdout io.Writer) {
+	t.stdout = stdout
+}
 
-func isBuiltin(cmd string) bool {
+func (t *typeCommand) setStderr(stderr io.Writer) {
+	t.stderr = stderr
+}
+
+func (t typeCommand) isBuiltin(cmd string) bool {
 	_, ok := builtins[cmd]
 
 	return ok
@@ -20,12 +25,12 @@ func isBuiltin(cmd string) bool {
 
 func (t typeCommand) execute(args []string) {
 	for _, cmd := range args {
-		if isBuiltin(cmd) {
-			fmt.Println(cmd, "is a shell builtin")
+		if t.isBuiltin(cmd) {
+			fmt.Fprintln(t.stdout, cmd, "is a shell builtin")
 		} else if filepath := findInPath(cmd); filepath != "" {
-			fmt.Println(cmd, "is", filepath)
+			fmt.Fprintln(t.stdout, cmd, "is", filepath)
 		} else {
-			fmt.Print(cmd, ": not found\n")
+			fmt.Fprint(t.stdout, cmd, ": not found\n")
 		}
 	}
 }

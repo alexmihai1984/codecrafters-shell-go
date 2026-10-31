@@ -19,16 +19,12 @@ func main() {
 		}
 
 		cmd = strings.TrimSpace(cmd)
-		if !handleCmd(cmd) {
-			return
-		}
+		handleCmd(cmd)
 	}
 }
 
-func handleCmd(cmd string) bool {
+func handleCmd(cmd string) {
 	var command command = parseCmd(cmd)
 
 	command.execute()
-
-	return true
 }
