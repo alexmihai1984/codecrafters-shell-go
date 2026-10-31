@@ -41,6 +41,11 @@ func (p *parser) parse() parseResult {
 		p.processChar(c)
 	}
 
+	// todo: tihs needs to go
+	if p.state.isStdRedirectMaybe {
+		p.state.currentWord.WriteRune('1')
+	}
+
 	if p.state.currentWord.Len() > 0 {
 		p.state.parts = append(p.state.parts, p.state.currentWord.String())
 		p.state.currentWord.Reset()
