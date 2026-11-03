@@ -1,14 +1,11 @@
 package main
 
 import (
-	"bytes"
-	"os/exec"
 	"strings"
 	"testing"
 )
 
 func TestREPL(t *testing.T) {
-	cmd := exec.Command("../your_program.sh")
 	commands := []string{
 		"invalid_command_1",
 		"invalid_command_2",
@@ -16,19 +13,7 @@ func TestREPL(t *testing.T) {
 		"invalid_command_4",
 		"exit",
 	}
-
-	cmd.Stdin = strings.NewReader(strings.Join(commands, "\n") + "\n")
-
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	err := cmd.Run()
-	if err != nil {
-		t.Fatalf("program failed: %v", err)
-	}
+	stdout, stderr := runShell(t, commands)
 
 	expectedStdout := strings.Repeat("$ ", 5)
 
@@ -37,11 +22,11 @@ func TestREPL(t *testing.T) {
 		expectedStderr.WriteString(command + ": command not found\n")
 	}
 
-	if stdout.String() != expectedStdout {
-		t.Errorf("expected stdout %q, got %q", expectedStdout, stdout.String())
+	if stdout != expectedStdout {
+		t.Errorf("expected stdout %q, got %q", expectedStdout, stdout)
 	}
 
-	if stderr.String() != expectedStderr.String() {
-		t.Errorf("expected stderr %q, got %q", expectedStderr.String(), stderr.String())
+	if stderr != expectedStderr.String() {
+		t.Errorf("expected stderr %q, got %q", expectedStderr.String(), stderr)
 	}
 }
