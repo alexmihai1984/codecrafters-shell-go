@@ -45,3 +45,23 @@ func TestTypeNonexistent(t *testing.T) {
 		t.Errorf("unexpected stderr: %q", stderr)
 	}
 }
+
+func TestTypeProgram(t *testing.T) {
+	stdout, stderr := runShellWithPath(
+		t,
+		[]string{
+			"type ls",
+			"exit",
+		},
+		"/usr/bin:/usr/local/bin:/bin",
+	)
+
+	expectedStdout := "$ ls is /usr/bin/ls\n$ "
+	if stdout != expectedStdout {
+		t.Errorf("unexpected stdout:\nexpected: %q\ngot:      %q", expectedStdout, stdout)
+	}
+
+	if len(stderr) != 0 {
+		t.Errorf("unexpected stderr: %q", stderr)
+	}
+}
