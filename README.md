@@ -4,7 +4,7 @@ My take on <https://app.codecrafters.io/courses/shell>.
 
 ## Run
 
-```go
+```bash
 go run ./app
 ```
 
