@@ -43,6 +43,22 @@ func runShellWithPath(t *testing.T, commands []string, path string) (string, str
 	return stdout.String(), stderr.String()
 }
 
+func expectStdout(t *testing.T, stdout string, lines []string) {
+	expectedStdout := strings.Join(lines, "\n")
+
+	if stdout != expectedStdout {
+		t.Errorf("unexpected stdout:\nexpected: %q\ngot:      %q", expectedStdout, stdout)
+	}
+}
+
+func expectStderr(t *testing.T, stderr string, lines []string) {
+	expectedStderr := strings.Join(lines, "\n")
+
+	if stderr != expectedStderr {
+		t.Errorf("unexpected stderr:\nexpected: %q\ngot:      %q", expectedStderr, stderr)
+	}
+}
+
 func getWd(t *testing.T) string {
 	dir, err := os.Getwd()
 	if err != nil {
