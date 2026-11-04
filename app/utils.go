@@ -24,6 +24,15 @@ func findInPath(cmd string) string {
 	return ""
 }
 
+func findAbsolutePath(cmd string) string {
+	err := unix.Access(cmd, unix.X_OK)
+	if err != nil {
+		return ""
+	}
+
+	return cmd
+}
+
 func getWorkingDirectory() string {
 	pwd, err := os.Getwd()
 	if err != nil {

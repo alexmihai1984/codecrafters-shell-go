@@ -64,3 +64,21 @@ func TestExecuteNonexistentProgram(t *testing.T) {
 			expectedStderr, stderr)
 	}
 }
+
+func TestAbsoluteExecutablePath(t *testing.T) {
+	stdout, stderr := runShell(t, []string{
+		`/bin/echo hello`,
+		"exit",
+	})
+
+	expectStdout(t, stdout, []string{
+		"$ hello",
+		"$ ",
+	})
+
+	expectStderr(
+		t,
+		stderr,
+		[]string{},
+	)
+}

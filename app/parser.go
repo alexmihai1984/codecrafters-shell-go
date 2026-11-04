@@ -46,6 +46,7 @@ func (p *parser) parse() parseResult {
 		}
 	}
 
+	// fmt.Println(p.state.parts)
 	// for _, c := range p.cmd {
 	// 	p.processChar(c)
 	// }
@@ -164,8 +165,9 @@ func (p *parser) readEscapedCharAt(i int, token *strings.Builder) int {
 func (p *parser) readDoubleQuotesAt(i int, token *strings.Builder) int {
 	i++
 	c, size := utf8.DecodeRuneInString(p.cmd[i:])
-	for i < len(p.cmd) && !(c == '"') {
+	for i < len(p.cmd) { // todo make foreach
 		if c == '"' {
+			// fmt.Println("returning:", i+1)
 			return i + 1
 		} else if c == '\\' && p.isEscapedInDoubleQuotes(i+1) {
 			i = p.readEscapedCharAt(i, token)
@@ -192,7 +194,8 @@ func (p *parser) isEscapedInDoubleQuotes(i int) bool {
 func (p *parser) readSingleQuotesAt(i int, token *strings.Builder) int {
 	for j, c := range p.cmd[i+1:] {
 		if c == '\'' {
-			return i + j + 1
+			// fmt.Println("returning:", i+j+2)
+			return i + j + 2
 		}
 
 		token.WriteRune(c)

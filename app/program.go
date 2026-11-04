@@ -22,8 +22,13 @@ func (p *program) setStderr(stderr io.Writer) {
 func (p program) execute(args []string) {
 	filepath := findInPath(p.name)
 	if filepath == "" {
-		fmt.Fprint(p.stderr, p.name, ": command not found\n")
+		filepath = findAbsolutePath(p.name)
+		if filepath == "" {
+			fmt.Fprint(p.stderr, p.name, ": command not found\n")
+			return
+		}
 	}
+
 	cmd := exec.Command(filepath, args...)
 	cmd.Args[0] = p.name
 	cmd.Stderr = p.stderr
