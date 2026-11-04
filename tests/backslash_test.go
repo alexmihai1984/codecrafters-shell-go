@@ -10,17 +10,18 @@ func TestBackslashOutsideQuotes(t *testing.T) {
 		"exit",
 	})
 
-	expectedStdout := "$ world      script\n" +
-		"$ beforenafter\n" +
-		"$ '\"script world\"'\n" +
-		"$ "
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ world      script",
+			"$ beforenafter",
+			"$ '\"script world\"'",
+			"$ ",
+		},
+	)
 
-	if stdout != expectedStdout {
-		t.Errorf("unexpected stdout:\nexpected: %q\ngot:      %q", expectedStdout, stdout)
-	}
-	if stderr != "" {
-		t.Errorf("unexpected stderr: %q", stderr)
-	}
+	expectStderr(t, stderr, []string{})
 }
 
 func TestBackslashWithinSingleQuotes(t *testing.T) {
@@ -42,11 +43,7 @@ func TestBackslashWithinSingleQuotes(t *testing.T) {
 		},
 	)
 
-	expectStderr(
-		t,
-		stderr,
-		[]string{},
-	)
+	expectStderr(t, stderr, []string{})
 }
 
 func TestBackslashWithinDoubleQuotes(t *testing.T) {
@@ -70,9 +67,5 @@ func TestBackslashWithinDoubleQuotes(t *testing.T) {
 		},
 	)
 
-	expectStderr(
-		t,
-		stderr,
-		[]string{},
-	)
+	expectStderr(t, stderr, []string{})
 }

@@ -6,45 +6,56 @@ func TestCdAbsolutePath(t *testing.T) {
 	firstDir := t.TempDir()
 	secondDir := t.TempDir()
 
-	stdout, stderr := runShell(t, []string{
-		"cd " + firstDir,
-		"pwd",
-		"cd " + secondDir,
-		"pwd",
-		"exit",
-	})
+	stdout, stderr := runShell(
+		t,
+		[]string{
+			"cd " + firstDir,
+			"pwd",
+			"cd " + secondDir,
+			"pwd",
+			"exit",
+		},
+	)
 
-	expectedStdout := "$ $ " + firstDir + "\n$ $ " + secondDir + "\n$ "
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ $ " + firstDir,
+			"$ $ " + secondDir,
+			"$ ",
+		},
+	)
 
-	if stdout != expectedStdout {
-		t.Errorf("unexpected stdout:\nexpected: %q\ngot:      %q",
-			expectedStdout, stdout)
-	}
-
-	if stderr != "" {
-		t.Errorf("unexpected stderr: %q", stderr)
-	}
+	expectStderr(t, stderr, []string{})
 }
 
 func TestCdAbsoluteNonexistentPath(t *testing.T) {
 	invalidDir := "/this/directory/does/not/exist"
 
-	stdout, stderr := runShell(t, []string{
-		"cd " + invalidDir,
-		"pwd",
-		"exit",
-	})
+	stdout, stderr := runShell(
+		t,
+		[]string{
+			"cd " + invalidDir,
+			"pwd",
+			"exit",
+		},
+	)
 
-	expectedStdout := "$ $ " + getWd(t) + "\n$ "
-	expectedStderr := "cd: " + invalidDir + ": No such file or directory\n"
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ $ " + getWd(t),
+			"$ ",
+		},
+	)
 
-	if stdout != expectedStdout {
-		t.Errorf("unexpected stdout:\nexpected: %q\ngot:      %q",
-			expectedStdout, stdout)
-	}
-
-	if stderr != expectedStderr {
-		t.Errorf("unexpected stderr:\nexpected: %q\ngot:      %q",
-			expectedStderr, stderr)
-	}
+	expectStderr(
+		t,
+		stderr,
+		[]string{
+			"cd: " + invalidDir + ": No such file or directory\n",
+		},
+	)
 }
