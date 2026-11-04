@@ -4,10 +4,10 @@ import "testing"
 
 func TestSingleQuotes(t *testing.T) {
 	stdout, stderr := runShell(t, []string{
-		`echo 'hello world'`,
-		`echo 'hello     world'`,
-		`echo 'hello\nworld'`,
-		`echo 'hello "world"'`,
+		"echo 'hello world'",
+		"echo 'hello     world'",
+		"echo 'hello\\nworld'",
+		"echo 'hello \"world\"'",
 		"exit",
 	})
 

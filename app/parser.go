@@ -167,7 +167,7 @@ func (p *parser) readDoubleQuotesAt(i int, token *strings.Builder) int {
 	for i < len(p.cmd) && !(c == '"') {
 		if c == '"' {
 			return i + 1
-		} else if c == '\\' {
+		} else if c == '\\' && p.isEscapedInDoubleQuotes(i+1) {
 			i = p.readEscapedCharAt(i, token)
 		} else {
 			token.WriteRune(c)
@@ -178,6 +178,15 @@ func (p *parser) readDoubleQuotesAt(i int, token *strings.Builder) int {
 	}
 
 	return i
+}
+
+func (p *parser) isEscapedInDoubleQuotes(i int) bool {
+	if i >= len(p.cmd) {
+		return false
+	}
+
+	c, _ := utf8.DecodeRuneInString(p.cmd[i:])
+	return c == '"' || c == '\\' || c == '$' || c == '`'
 }
 
 func (p *parser) readSingleQuotesAt(i int, token *strings.Builder) int {
