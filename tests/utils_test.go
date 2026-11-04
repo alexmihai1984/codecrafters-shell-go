@@ -42,3 +42,12 @@ func runShellWithPath(t *testing.T, commands []string, path string) (string, str
 
 	return stdout.String(), stderr.String()
 }
+
+func getWd(t *testing.T) string {
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get working directory: %v", err)
+	}
+
+	return dir
+}

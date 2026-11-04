@@ -25,7 +25,10 @@ func (c cd) execute(args []string) {
 		return
 	}
 
-	path := args[0]
+	path := "~"
+	if len(args) != 0 {
+		path = args[0]
+	}
 
 	if strings.HasPrefix(path, "~") {
 		home := getHomeDirectory()
