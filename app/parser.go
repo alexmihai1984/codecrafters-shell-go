@@ -135,7 +135,7 @@ func (p *parser) readStdRedirect(i int, token *strings.Builder) (strings.Builder
 	}
 
 	if c == '1' {
-		if i < len(p.cmd)-1 && p.cmd[i+1] == '>' {
+		if i < len(p.cmd)-1 && p.cmd[i+1] == '>' && token.Len() == 0 {
 			if token.Len() > 0 {
 				p.state.parts = append(p.state.parts, token.String())
 			}
@@ -165,7 +165,7 @@ func (p *parser) readEscapedCharAt(i int, token *strings.Builder) int {
 func (p *parser) readDoubleQuotesAt(i int, token *strings.Builder) int {
 	i++
 	c, size := utf8.DecodeRuneInString(p.cmd[i:])
-	for i < len(p.cmd) { // todo make foreach
+	for i < len(p.cmd) {
 		if c == '"' {
 			// fmt.Println("returning:", i+1)
 			return i + 1

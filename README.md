@@ -12,4 +12,5 @@ go run ./app
 
 ```bash
 go test -v ./tests/
+go test -v ./tests/ -run 'TestPwd'
 ```

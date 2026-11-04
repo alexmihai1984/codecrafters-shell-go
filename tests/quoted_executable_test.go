@@ -7,6 +7,7 @@ import (
 )
 
 func TestQuotedExecutableNames(t *testing.T) {
+	// todo refactor into separate tests, either parametrized test or completely separate
 	binDir := t.TempDir()
 
 	executableNames := []string{
