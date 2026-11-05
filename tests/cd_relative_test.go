@@ -26,19 +26,18 @@ func TestCdRelativePath(t *testing.T) {
 		"exit",
 	})
 
-	expectedStdout := "$ $ $ " + firstDir + "\n" +
-		"$ $ " + secondDir + "\n" +
-		"$ $ " + firstDir + "\n" +
-		"$ "
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ $ $ " + firstDir + "\n" +
+				"$ $ " + secondDir + "\n" +
+				"$ $ " + firstDir + "\n" +
+				"$ ",
+		},
+	)
 
-	if stdout != expectedStdout {
-		t.Errorf("unexpected stdout:\nexpected: %q\ngot:      %q",
-			expectedStdout, stdout)
-	}
-
-	if stderr != "" {
-		t.Errorf("unexpected stderr: %q", stderr)
-	}
+	expectStderr(t, stderr, []string{})
 }
 
 func TestCdRelativeNonexistentPath(t *testing.T) {
@@ -50,16 +49,20 @@ func TestCdRelativeNonexistentPath(t *testing.T) {
 		"exit",
 	})
 
-	expectedStdout := "$ $ " + getWd(t) + "\n$ "
-	expectedStderr := "cd: " + invalidDir + ": No such file or directory\n"
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ $ " + getWd(t),
+			"$ ",
+		},
+	)
 
-	if stdout != expectedStdout {
-		t.Errorf("unexpected stdout:\nexpected: %q\ngot:      %q",
-			expectedStdout, stdout)
-	}
-
-	if stderr != expectedStderr {
-		t.Errorf("unexpected stderr:\nexpected: %q\ngot:      %q",
-			expectedStderr, stderr)
-	}
+	expectStderr(
+		t,
+		stderr,
+		[]string{
+			"cd: " + invalidDir + ": No such file or directory\n",
+		},
+	)
 }
