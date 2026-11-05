@@ -59,6 +59,18 @@ func expectStderr(t *testing.T, stderr string, lines []string) {
 	}
 }
 
+func expectFileContent(t *testing.T, filepath string, lines []string) {
+	content, err := os.ReadFile(filepath)
+	if err != nil {
+		t.Fatalf("failed to read redirected file: %v", err)
+	}
+
+	expectedContent := strings.Join(lines, "\n")
+	if string(content) != expectedContent {
+		t.Errorf("expected %q, got %q", "hello1\n", string(content))
+	}
+}
+
 func getWd(t *testing.T) string {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -66,4 +78,12 @@ func getWd(t *testing.T) string {
 	}
 
 	return dir
+}
+
+func createFile(t *testing.T, filepath string, lines []string, perm os.FileMode) {
+	content := strings.Join(lines, "\n")
+
+	if err := os.WriteFile(filepath, []byte(content), perm); err != nil {
+		t.Fatalf("failed to create executable: %v", err)
+	}
 }

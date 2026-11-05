@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-// todo refactor these tests
 func TestStdoutRedirection(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -42,27 +41,22 @@ func TestStdoutRedirection(t *testing.T) {
 				"exit",
 			})
 
-			if stdout != "$ $ " {
-				t.Errorf("unexpected stdout: %q", stdout)
-			}
+			expectStdout(
+				t,
+				stdout,
+				[]string{
+					"$ $ ",
+				},
+			)
 
-			if stderr != "" {
-				t.Errorf("unexpected stderr: %q", stderr)
-			}
+			expectStderr(t, stderr, []string{})
 
-			content, err := os.ReadFile(outputFile)
-			if err != nil {
-				t.Fatalf("failed to read redirected file: %v", err)
-			}
-
-			if string(content) != "hello\n" {
-				t.Errorf("expected file content %q, got %q", "hello\n", string(content))
-			}
+			expectFileContent(t, outputFile, []string{"hello\n"})
 		})
 	}
 }
 
-func TestStdoutRedirectionWithTrailingOne(t *testing.T) {
+func TestStdoutRedirectionWithTrailingOneInput(t *testing.T) {
 	dir := t.TempDir()
 	outputFile := filepath.Join(dir, "output.txt")
 
@@ -71,22 +65,17 @@ func TestStdoutRedirectionWithTrailingOne(t *testing.T) {
 		"exit",
 	})
 
-	if stdout != "$ $ " {
-		t.Errorf("unexpected stdout: %q", stdout)
-	}
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ $ ",
+		},
+	)
 
-	if stderr != "" {
-		t.Errorf("unexpected stderr: %q", stderr)
-	}
+	expectStderr(t, stderr, []string{})
 
-	content, err := os.ReadFile(outputFile)
-	if err != nil {
-		t.Fatalf("failed to read redirected file: %v", err)
-	}
-
-	if string(content) != "hello1\n" {
-		t.Errorf("expected %q, got %q", "hello1\n", string(content))
-	}
+	expectFileContent(t, outputFile, []string{"hello1\n"})
 }
 
 func TestStdoutRedirectionWhenCommandFails(t *testing.T) {
@@ -94,7 +83,6 @@ func TestStdoutRedirectionWhenCommandFails(t *testing.T) {
 	outputFile := filepath.Join(dir, "output.txt")
 	missingFile := filepath.Join(dir, "does-not-exist")
 
-	// Prepopulate the output file to verify that redirection truncates it.
 	if err := os.WriteFile(outputFile, []byte("old contents"), 0644); err != nil {
 		t.Fatalf("failed to create output file: %v", err)
 	}
@@ -104,21 +92,21 @@ func TestStdoutRedirectionWhenCommandFails(t *testing.T) {
 		"exit",
 	})
 
-	if stdout != "$ $ " {
-		t.Errorf("unexpected stdout: %q", stdout)
-	}
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ $ ",
+		},
+	)
 
-	expectedStderr := "cat: " + missingFile + ": No such file or directory\n"
-	if stderr != expectedStderr {
-		t.Errorf("unexpected stderr:\nexpected: %q\ngot:      %q", expectedStderr, stderr)
-	}
+	expectStderr(
+		t,
+		stderr,
+		[]string{
+			"cat: " + missingFile + ": No such file or directory\n",
+		},
+	)
 
-	content, err := os.ReadFile(outputFile)
-	if err != nil {
-		t.Fatalf("failed to read redirected file: %v", err)
-	}
-
-	if len(content) != 0 {
-		t.Errorf("expected empty file, got %q", string(content))
-	}
+	expectFileContent(t, outputFile, []string{})
 }

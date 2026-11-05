@@ -1,59 +1,70 @@
 package main
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 )
 
-func TestQuotedExecutableNames(t *testing.T) {
-	// todo refactor into separate tests, either parametrized test or completely separate
-	binDir := t.TempDir()
+func TestQuotedExecutableName(t *testing.T) {
+	dir := t.TempDir()
 
-	executableNames := []string{
-		`exe  with  space`,
-		`exe with "quotes"`,
-		`exe with 'single quotes'`,
+	tests := []struct {
+		name        string
+		exeName     string
+		contentFile string
+		shellInput  string
+	}{
+		{
+			name:        "exe with space",
+			exeName:     `exe  with  space`,
+			contentFile: "content_f1.txt",
+			shellInput:  "'" + filepath.Join(dir, `exe  with  space`) + "' " + filepath.Join(dir, "content_f1.txt"),
+		},
+		{
+			name:        "exe with double quotes",
+			exeName:     `exe with "quotes"`,
+			contentFile: "content_f2.txt",
+			shellInput:  "'" + filepath.Join(dir, `exe with "quotes"`) + "' " + filepath.Join(dir, "content_f2.txt"),
+		},
+		{
+			name:        "exe with single quotes",
+			exeName:     `exe with 'single quotes'`,
+			contentFile: "content_f3.txt",
+			shellInput:  "\"" + filepath.Join(dir, `exe with 'single quotes'`) + "\" " + filepath.Join(dir, "content_f3.txt"),
+		},
 	}
 
-	for _, name := range executableNames {
-		path := filepath.Join(binDir, name)
-		script := "#!/bin/sh\nexec /bin/cat \"$@\"\n"
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			exeFilePath := filepath.Join(dir, tt.exeName)
+			contentFilePath := filepath.Join(dir, tt.contentFile)
 
-		if err := os.WriteFile(path, []byte(script), 0755); err != nil {
-			t.Fatalf("failed to create executable: %v", err)
-		}
-	}
+			createFile(
+				t,
+				exeFilePath,
+				[]string{"#!/bin/sh\nexec /bin/cat \"$@\"\n"},
+				0755,
+			)
 
-	files := []string{"f1", "f2", "f3"}
-	contents := []string{
-		"mango raspberry.",
-		"orange raspberry.",
-		"pineapple orange.",
-	}
+			createFile(
+				t,
+				contentFilePath,
+				[]string{"some content\n"},
+				0644,
+			)
 
-	for i, name := range files {
-		if err := os.WriteFile(filepath.Join(binDir, name), []byte(contents[i]), 0644); err != nil {
-			t.Fatalf("failed to create file: %v", err)
-		}
-	}
+			stdout, stderr := runShell(t, []string{
+				tt.shellInput,
+				"exit",
+			})
 
-	stdout, stderr := runShell(t, []string{
-		"'" + filepath.Join(binDir, `exe  with  space`) + "' " + filepath.Join(binDir, "f1"),
-		"'" + filepath.Join(binDir, `exe with "quotes"`) + "' " + filepath.Join(binDir, "f2"),
-		"\"" + filepath.Join(binDir, `exe with 'single quotes'`) + "\" " + filepath.Join(binDir, "f3"),
-		"exit",
-	})
+			expectStdout(
+				t,
+				stdout,
+				[]string{"$ some content", "$ "},
+			)
 
-	expectedStdout := "$ mango raspberry." +
-		"$ orange raspberry." +
-		"$ pineapple orange." +
-		"$ "
-
-	if stdout != expectedStdout {
-		t.Errorf("unexpected stdout:\nexpected: %q\ngot:      %q", expectedStdout, stdout)
-	}
-	if stderr != "" {
-		t.Errorf("unexpected stderr: %q", stderr)
+			expectStderr(t, stderr, []string{})
+		})
 	}
 }
