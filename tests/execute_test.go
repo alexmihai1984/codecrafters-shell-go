@@ -1,7 +1,6 @@
 package main
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -14,13 +13,13 @@ func TestExecuteProgram(t *testing.T) {
 		},
 	)
 
-	if !strings.Contains(stdout, "execute_test.go") {
-		t.Errorf("expected ls output to contain execute_test.go, got: %q", stdout)
-	}
+	expectStdoutContains(
+		t,
+		stdout,
+		"execute_test.go",
+	)
 
-	if len(stderr) != 0 {
-		t.Errorf("unexpected stderr: %q", stderr)
-	}
+	expectStderr(t, stderr, []string{})
 }
 
 func TestExecuteProgramWithArguments(t *testing.T) {
@@ -32,14 +31,16 @@ func TestExecuteProgramWithArguments(t *testing.T) {
 		},
 	)
 
-	expectedStdout := "$ hello from external program\n$ "
-	if stdout != expectedStdout {
-		t.Errorf("unexpected stdout:\nexpected: %q\ngot:      %q", expectedStdout, stdout)
-	}
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ hello from external program",
+			"$ ",
+		},
+	)
 
-	if len(stderr) != 0 {
-		t.Errorf("unexpected stderr: %q", stderr)
-	}
+	expectStderr(t, stderr, []string{})
 }
 
 func TestExecuteNonexistentProgram(t *testing.T) {
@@ -51,18 +52,21 @@ func TestExecuteNonexistentProgram(t *testing.T) {
 		},
 	)
 
-	expectedStdout := "$ $ "
-	expectedStderr := "nonexistent_command: command not found\n"
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ $ ",
+		},
+	)
 
-	if stdout != expectedStdout {
-		t.Errorf("unexpected stdout:\nexpected: %q\ngot:      %q",
-			expectedStdout, stdout)
-	}
-
-	if stderr != expectedStderr {
-		t.Errorf("unexpected stderr:\nexpected: %q\ngot:      %q",
-			expectedStderr, stderr)
-	}
+	expectStderr(
+		t,
+		stderr,
+		[]string{
+			"nonexistent_command: command not found\n",
+		},
+	)
 }
 
 func TestAbsoluteExecutablePath(t *testing.T) {

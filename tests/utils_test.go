@@ -51,6 +51,12 @@ func expectStdout(t *testing.T, stdout string, lines []string) {
 	}
 }
 
+func expectStdoutContains(t *testing.T, stdout string, text string) {
+	if !strings.Contains(stdout, text) {
+		t.Errorf("expected stdout to contain %q, got: %q", text, stdout)
+	}
+}
+
 func expectStderr(t *testing.T, stderr string, lines []string) {
 	expectedStderr := strings.Join(lines, "\n")
 

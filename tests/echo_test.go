@@ -11,16 +11,14 @@ func TestEchoBuiltin(t *testing.T) {
 		"exit",
 	})
 
-	expectedStdout := "$ blueberry grape mango\n$ pear mango\n$ "
-	if stdout != expectedStdout {
-		t.Errorf(
-			"unexpected stdout:\nexpected: %q\ngot:      %q",
-			expectedStdout,
-			stdout,
-		)
-	}
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ blueberry grape mango",
+			"$ pear mango\n$ ",
+		},
+	)
 
-	if len(stderr) != 0 {
-		t.Errorf("unexpected stderr: %q", stderr)
-	}
+	expectStderr(t, stderr, []string{})
 }
