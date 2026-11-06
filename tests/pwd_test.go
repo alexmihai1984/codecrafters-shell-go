@@ -5,18 +5,22 @@ import (
 )
 
 func TestPwd(t *testing.T) {
-	stdout, stderr := runShell(t, []string{
-		"pwd",
-		"exit",
-	})
+	stdout, stderr := runShell(
+		t,
+		[]string{
+			"pwd",
+			"exit",
+		},
+	)
 
-	expectedStdout := "$ " + getWd(t) + "\n$ "
-	if stdout != expectedStdout {
-		t.Errorf("unexpected stdout:\nexpected: %q\ngot:      %q",
-			expectedStdout, stdout)
-	}
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ " + getWd(t),
+			"$ ",
+		},
+	)
 
-	if stderr != "" {
-		t.Errorf("unexpected stderr: %q", stderr)
-	}
+	expectStderr(t, stderr, []string{})
 }
