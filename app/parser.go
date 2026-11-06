@@ -23,6 +23,7 @@ type parseResult struct {
 	verb        string
 	params      []string
 	stdRedirect string
+	errRedirect string
 }
 
 func buildParser(cmd string) parser {
@@ -53,8 +54,18 @@ func (p *parser) parse() parseResult {
 		return parseResult{
 			ok: false,
 		}
-	} else {
+	} else if stdRedirectIdx > 0 {
 		params = p.state.parts[1:stdRedirectIdx]
+	}
+
+	errRedirectIdx, errRedirect, err := p.getErrRedirect()
+	if err != nil {
+		fmt.Println(err.Error())
+		return parseResult{
+			ok: false,
+		}
+	} else if errRedirectIdx > 0 {
+		params = p.state.parts[1:errRedirectIdx]
 	}
 
 	return parseResult{
@@ -62,7 +73,31 @@ func (p *parser) parse() parseResult {
 		verb:        p.state.parts[0],
 		params:      params,
 		stdRedirect: stdRedirect,
+		errRedirect: errRedirect,
 	}
+}
+
+func (p *parser) getErrRedirect() (int, string, error) {
+	errRedirectIdx := p.findErrRedirect()
+	if errRedirectIdx < 0 {
+		return -1, "", nil
+	}
+
+	if len(p.state.parts) <= errRedirectIdx+1 {
+		return -1, "", errors.New("nsh: syntax error near unexpected token `newline'")
+	}
+
+	return errRedirectIdx, p.state.parts[errRedirectIdx+1], nil
+}
+
+func (p *parser) findErrRedirect() int {
+	for i, s := range p.state.parts {
+		if s == "2>" {
+			return i
+		}
+	}
+
+	return -1
 }
 
 func (p *parser) getStdRedirect() (int, string, error) {
@@ -108,6 +143,8 @@ func (p *parser) readUntilWhitespace(i int) (string, int) {
 			i = p.readEscapedCharAt(i, &token)
 		} else if c == '>' || c == '1' {
 			token, i = p.readStdRedirect(i, &token)
+		} else if c == '2' {
+			token, i = p.readErrRedirect(i, &token)
 		} else {
 			token.WriteRune(c)
 			i += size
@@ -117,6 +154,20 @@ func (p *parser) readUntilWhitespace(i int) (string, int) {
 	}
 
 	return token.String(), i
+}
+
+func (p *parser) readErrRedirect(i int, token *strings.Builder) (strings.Builder, int) {
+	c, _ := utf8.DecodeRuneInString(p.cmd[i:])
+	if i < len(p.cmd)-1 && p.cmd[i+1] == '>' && token.Len() == 0 {
+		if token.Len() > 0 {
+			p.state.parts = append(p.state.parts, token.String())
+		}
+		p.state.parts = append(p.state.parts, "2>")
+		return strings.Builder{}, i + 2
+	} else {
+		token.WriteRune(c)
+		return *token, i + 1
+	}
 }
 
 func (p *parser) readStdRedirect(i int, token *strings.Builder) (strings.Builder, int) {

@@ -10,6 +10,7 @@ type command struct {
 	verb        string
 	args        []string
 	stdRedirect string
+	errRedirect string
 	executable  executable
 }
 
@@ -35,6 +36,7 @@ func parseCmd(cmd string) command {
 			"noop",
 			nil,
 			parserResult.stdRedirect,
+			parserResult.errRedirect,
 			&noop{},
 		}
 	}
@@ -45,6 +47,7 @@ func parseCmd(cmd string) command {
 			parserResult.verb,
 			parserResult.params,
 			parserResult.stdRedirect,
+			parserResult.errRedirect,
 			&program{
 				name: parserResult.verb,
 			},
@@ -55,6 +58,7 @@ func parseCmd(cmd string) command {
 		parserResult.verb,
 		parserResult.params,
 		parserResult.stdRedirect,
+		parserResult.errRedirect,
 		executable,
 	}
 }
@@ -71,6 +75,17 @@ func (c command) execute() {
 		}
 
 		stdout = file
+		defer file.Close()
+	}
+
+	if c.errRedirect != "" {
+		file, err := os.Create(c.errRedirect)
+		if err != nil {
+			fmt.Print("nsh: ", c.errRedirect, ": No such file or directory\n")
+			return
+		}
+
+		stderr = file
 		defer file.Close()
 	}
 
