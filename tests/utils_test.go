@@ -68,12 +68,19 @@ func expectStderr(t *testing.T, stderr string, lines []string) {
 func expectFileContent(t *testing.T, filepath string, lines []string) {
 	content, err := os.ReadFile(filepath)
 	if err != nil {
-		t.Fatalf("failed to read redirected file: %v", err)
+		t.Fatalf("failed to read file: %v", err)
 	}
 
 	expectedContent := strings.Join(lines, "\n")
 	if string(content) != expectedContent {
 		t.Errorf("expected %q, got %q", "hello1\n", string(content))
+	}
+}
+
+func expectNoFile(t *testing.T, filepath string) {
+	_, err := os.ReadFile(filepath)
+	if err == nil {
+		t.Fatalf("expected file not to exist, but exists '%q'", filepath)
 	}
 }
 

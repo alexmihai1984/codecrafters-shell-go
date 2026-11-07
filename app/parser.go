@@ -87,6 +87,10 @@ func (p *parser) getErrRedirect() (int, string, error) {
 		return -1, "", errors.New("nsh: syntax error near unexpected token `newline'")
 	}
 
+	if p.isRedirect(p.state.parts[errRedirectIdx+1]) {
+		return -1, "", errors.New("nsh: syntax error near unexpected token `" + string(p.state.parts[errRedirectIdx+1][0]) + "'")
+	}
+
 	return errRedirectIdx, p.state.parts[errRedirectIdx+1], nil
 }
 
@@ -110,17 +114,33 @@ func (p *parser) getStdRedirect() (int, string, error) {
 		return -1, "", errors.New("nsh: syntax error near unexpected token `newline'")
 	}
 
+	if p.isRedirect(p.state.parts[stdRedirectIdx+1]) {
+		return -1, "", errors.New("nsh: syntax error near unexpected token `" + string(p.state.parts[stdRedirectIdx+1][0]) + "'")
+	}
+
 	return stdRedirectIdx, p.state.parts[stdRedirectIdx+1], nil
 }
 
 func (p *parser) findStdRedirect() int {
 	for i, s := range p.state.parts {
-		if s == ">" || s == "1>" {
+		if p.isStdoutRedirect(s) {
 			return i
 		}
 	}
 
 	return -1
+}
+
+func (p *parser) isRedirect(s string) bool {
+	return p.isStdoutRedirect(s) || p.isStderrRedirect(s)
+}
+
+func (p *parser) isStdoutRedirect(s string) bool {
+	return s == ">" || s == "1>"
+}
+
+func (p *parser) isStderrRedirect(s string) bool {
+	return s == "2>"
 }
 
 func (p *parser) readAt(i int) (string, int) {

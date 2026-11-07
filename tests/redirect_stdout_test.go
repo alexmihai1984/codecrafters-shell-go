@@ -110,3 +110,26 @@ func TestStdoutRedirectionWhenCommandFails(t *testing.T) {
 
 	expectFileContent(t, outputFile, []string{})
 }
+
+func TestStderrRedirectImmediatelyAfterStdoutRedirect(t *testing.T) {
+	dir := t.TempDir()
+	outputFile := filepath.Join(dir, "output.txt")
+
+	stdout, stderr := runShell(t, []string{
+		"echo hello > 2> " + outputFile,
+		"exit",
+	})
+
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ nsh: syntax error near unexpected token `2'",
+			"$ ",
+		},
+	)
+
+	expectStderr(t, stderr, []string{})
+
+	expectNoFile(t, outputFile)
+}

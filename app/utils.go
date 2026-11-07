@@ -52,7 +52,3 @@ func getHomeDirectory() string {
 
 	return home
 }
-
-func isStdRedirect(s string) bool {
-	return s == ">" || s == "1>"
-}
