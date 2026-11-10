@@ -2,21 +2,14 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
 )
 
 type command struct {
-	verb        string
-	args        []string
-	stdRedirect string
-	errRedirect string
-	executable  executable
-}
-
-type shell struct {
-	stdout io.Writer
-	stderr io.Writer
+	verb       string
+	args       []string
+	redirects  []redirect
+	executable executable
 }
 
 var builtins = map[string]executable{
@@ -35,8 +28,7 @@ func parseCmd(cmd string) command {
 		return command{
 			"noop",
 			nil,
-			parserResult.stdRedirect,
-			parserResult.errRedirect,
+			parserResult.redirects,
 			&noop{},
 		}
 	}
@@ -46,8 +38,7 @@ func parseCmd(cmd string) command {
 		return command{
 			parserResult.verb,
 			parserResult.params,
-			parserResult.stdRedirect,
-			parserResult.errRedirect,
+			parserResult.redirects,
 			&program{
 				name: parserResult.verb,
 			},
@@ -57,8 +48,7 @@ func parseCmd(cmd string) command {
 	return command{
 		parserResult.verb,
 		parserResult.params,
-		parserResult.stdRedirect,
-		parserResult.errRedirect,
+		parserResult.redirects,
 		executable,
 	}
 }
@@ -67,25 +57,20 @@ func (c command) execute() {
 	stdout := os.Stdout
 	stderr := os.Stderr
 
-	if c.stdRedirect != "" {
-		file, err := os.Create(c.stdRedirect)
+	for _, redirect := range c.redirects {
+		file, err := os.Create(redirect.file)
 		if err != nil {
-			fmt.Print("nsh: ", c.stdRedirect, ": No such file or directory\n")
+			fmt.Print("nsh: ", redirect.file, ": No such file or directory\n")
 			return
 		}
 
-		stdout = file
-		defer file.Close()
-	}
-
-	if c.errRedirect != "" {
-		file, err := os.Create(c.errRedirect)
-		if err != nil {
-			fmt.Print("nsh: ", c.errRedirect, ": No such file or directory\n")
-			return
+		switch redirect.redirectType {
+		case Stdout:
+			stdout = file
+		case Stderr:
+			stderr = file
 		}
 
-		stderr = file
 		defer file.Close()
 	}
 

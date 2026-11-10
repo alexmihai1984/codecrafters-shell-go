@@ -19,12 +19,26 @@ type parserState struct {
 }
 
 type parseResult struct {
-	ok          bool
-	verb        string
-	params      []string
-	stdRedirect string
-	errRedirect string
+	ok        bool
+	verb      string
+	params    []string
+	redirects []redirect
 }
+
+type redirect struct {
+	redirectType redirectType
+	file         string
+}
+
+type redirectType int
+
+const (
+	Stdout redirectType = iota
+	Stderr
+	StdoutAppend
+	StderrAppend
+	None
+)
 
 func buildParser(cmd string) parser {
 	return parser{
@@ -47,33 +61,62 @@ func (p *parser) parse() parseResult {
 		}
 	}
 
-	params := p.state.parts[1:]
-	stdRedirectIdx, stdRedirect, err := p.getStdRedirect()
-	if err != nil {
-		fmt.Println(err.Error())
-		return parseResult{
-			ok: false,
+	res := parseResult{
+		ok: true,
+	}
+	previousOneWasRedirect := false
+	for i, token := range p.state.parts {
+		if p.isRedirect(token) {
+			previousOneWasRedirect = true
+			redirectType := p.getRedirectType(token)
+			file, err := p.getRedirectFile(i + 1)
+			if err != nil {
+				fmt.Println(err.Error())
+				return parseResult{
+					ok: false,
+				}
+			}
+
+			res.redirects = append(res.redirects, redirect{redirectType: redirectType, file: file})
+		} else if res.verb == "" {
+			if previousOneWasRedirect {
+				previousOneWasRedirect = false
+			} else {
+				res.verb = token
+			}
+		} else {
+			if previousOneWasRedirect {
+				previousOneWasRedirect = false
+			} else {
+				res.params = append(res.params, token)
+			}
 		}
-	} else if stdRedirectIdx > 0 {
-		params = p.state.parts[1:stdRedirectIdx]
 	}
 
-	errRedirectIdx, errRedirect, err := p.getErrRedirect()
-	if err != nil {
-		fmt.Println(err.Error())
-		return parseResult{
-			ok: false,
-		}
-	} else if errRedirectIdx > 0 {
-		params = p.state.parts[1:errRedirectIdx]
+	return res
+}
+
+func (p *parser) getRedirectFile(i int) (string, error) {
+	if len(p.state.parts) <= i {
+		return "", errors.New("nsh: syntax error near unexpected token `newline'")
 	}
 
-	return parseResult{
-		ok:          true,
-		verb:        p.state.parts[0],
-		params:      params,
-		stdRedirect: stdRedirect,
-		errRedirect: errRedirect,
+	if p.isRedirect(p.state.parts[i]) {
+		return "", errors.New("nsh: syntax error near unexpected token `" + string(p.state.parts[i][0]) + "'")
+	}
+
+	return p.state.parts[i], nil
+}
+
+// todo: split interpreter from parser
+// todo: parseResult and command are very similar, maybe reconciliate them
+func (p *parser) getRedirectType(s string) redirectType {
+	if p.isStdoutRedirect(s) {
+		return Stdout
+	} else if p.isStderrRedirect(s) {
+		return Stderr
+	} else {
+		return None
 	}
 }
 
@@ -196,24 +239,36 @@ func (p *parser) readStdRedirect(i int, token *strings.Builder) (strings.Builder
 		if token.Len() > 0 {
 			p.state.parts = append(p.state.parts, token.String())
 		}
-		p.state.parts = append(p.state.parts, ">")
-		return strings.Builder{}, i + 1
-	}
 
-	if c == '1' {
-		if i < len(p.cmd)-1 && p.cmd[i+1] == '>' && token.Len() == 0 {
-			if token.Len() > 0 {
-				p.state.parts = append(p.state.parts, token.String())
-			}
-			p.state.parts = append(p.state.parts, "1>")
+		if i < len(p.cmd)-1 && p.cmd[i+1] == '>' {
+			p.state.parts = append(p.state.parts, ">>")
 			return strings.Builder{}, i + 2
 		} else {
-			token.WriteRune(c)
-			return *token, i + 1
+			p.state.parts = append(p.state.parts, ">")
+			return strings.Builder{}, i + 1
 		}
 	}
 
-	return *token, i
+	if c != '1' {
+		return *token, i
+	}
+
+	if i < len(p.cmd)-1 && p.cmd[i+1] == '>' && token.Len() == 0 {
+		if token.Len() > 0 {
+			p.state.parts = append(p.state.parts, token.String())
+		}
+
+		if i < len(p.cmd)-2 && p.cmd[i+2] == '>' {
+			p.state.parts = append(p.state.parts, "1>>")
+			return strings.Builder{}, i + 3
+		} else {
+			p.state.parts = append(p.state.parts, "1>")
+			return strings.Builder{}, i + 2
+		}
+	}
+
+	token.WriteRune(c)
+	return *token, i + 1
 }
 
 func (p *parser) readEscapedCharAt(i int, token *strings.Builder) int {

@@ -115,10 +115,13 @@ func TestStderrRedirectImmediatelyAfterStdoutRedirect(t *testing.T) {
 	dir := t.TempDir()
 	outputFile := filepath.Join(dir, "output.txt")
 
-	stdout, stderr := runShell(t, []string{
-		"echo hello > 2> " + outputFile,
-		"exit",
-	})
+	stdout, stderr := runShell(
+		t,
+		[]string{
+			"echo hello > 2> " + outputFile,
+			"exit",
+		},
+	)
 
 	expectStdout(
 		t,
@@ -132,4 +135,56 @@ func TestStderrRedirectImmediatelyAfterStdoutRedirect(t *testing.T) {
 	expectStderr(t, stderr, []string{})
 
 	expectNoFile(t, outputFile)
+}
+
+func TestMultipleStdoutRedirects(t *testing.T) {
+	dir := t.TempDir()
+	outputFile1 := filepath.Join(dir, "output1.txt")
+	outputFile2 := filepath.Join(dir, "output2.txt")
+
+	stdout, stderr := runShell(
+		t,
+		[]string{
+			"echo hello > " + outputFile1 + " > " + outputFile2,
+			"exit",
+		},
+	)
+
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ $ ",
+		},
+	)
+
+	expectStderr(t, stderr, []string{})
+
+	expectFileContent(t, outputFile1, []string{})
+	expectFileContent(t, outputFile2, []string{"hello\n"})
+}
+
+func TestRedirectStdoutWithoutCommand(t *testing.T) {
+	dir := t.TempDir()
+	outputFile := filepath.Join(dir, "output.txt")
+
+	stdout, stderr := runShell(
+		t,
+		[]string{
+			"> " + outputFile,
+			"exit",
+		},
+	)
+
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ $ ",
+		},
+	)
+
+	expectStderr(t, stderr, []string{})
+
+	expectFileContent(t, outputFile, []string{})
 }

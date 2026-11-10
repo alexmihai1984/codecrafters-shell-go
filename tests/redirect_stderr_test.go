@@ -123,3 +123,55 @@ func TestStdoutRedirectImmediatelyAfterStderrRedirect(t *testing.T) {
 
 	expectNoFile(t, outputFile)
 }
+
+func TestMultipleStderrRedirections(t *testing.T) {
+	dir := t.TempDir()
+	outputFile1 := filepath.Join(dir, "output1.txt")
+	outputFile2 := filepath.Join(dir, "output2.txt")
+
+	stdout, stderr := runShell(
+		t,
+		[]string{
+			"cat does-not-exits 2> " + outputFile1 + " 2> " + outputFile2,
+			"exit",
+		},
+	)
+
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ $ ",
+		},
+	)
+
+	expectStderr(t, stderr, []string{})
+
+	expectFileContent(t, outputFile1, []string{})
+	expectFileContent(t, outputFile2, []string{"cat: does-not-exits: No such file or directory\n"})
+}
+
+func TestRedirectStderrWithoutCommand(t *testing.T) {
+	dir := t.TempDir()
+	outputFile := filepath.Join(dir, "output.txt")
+
+	stdout, stderr := runShell(
+		t,
+		[]string{
+			"2> " + outputFile,
+			"exit",
+		},
+	)
+
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ $ ",
+		},
+	)
+
+	expectStderr(t, stderr, []string{})
+
+	expectFileContent(t, outputFile, []string{})
+}
