@@ -12,6 +12,21 @@ type command struct {
 	executable executable
 }
 
+type redirect struct {
+	redirectType redirectType
+	file         string
+}
+
+type redirectType int
+
+const (
+	Stdout redirectType = iota
+	Stderr
+	StdoutAppend
+	StderrAppend
+	None
+)
+
 var builtins = map[string]executable{
 	"cd":   &cd{},
 	"echo": &echo{},
@@ -22,35 +37,11 @@ var builtins = map[string]executable{
 
 func parseCmd(cmd string) command {
 	parser := buildParser(cmd)
-	parserResult := parser.parse()
+	parts := parser.parse()
+	interpreter := buildInterpreter(parts)
+	command := interpreter.interpret()
 
-	if parserResult.verb == "" || !parserResult.ok {
-		return command{
-			"noop",
-			nil,
-			parserResult.redirects,
-			&noop{},
-		}
-	}
-
-	executable, ok := builtins[parserResult.verb]
-	if !ok {
-		return command{
-			parserResult.verb,
-			parserResult.params,
-			parserResult.redirects,
-			&program{
-				name: parserResult.verb,
-			},
-		}
-	}
-
-	return command{
-		parserResult.verb,
-		parserResult.params,
-		parserResult.redirects,
-		executable,
-	}
+	return command
 }
 
 func (c command) execute() {
