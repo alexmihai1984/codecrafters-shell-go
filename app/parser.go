@@ -73,8 +73,14 @@ func (p *parser) readErrRedirect(i int, token *strings.Builder) (strings.Builder
 		if token.Len() > 0 {
 			p.state.parts = append(p.state.parts, token.String())
 		}
-		p.state.parts = append(p.state.parts, "2>")
-		return strings.Builder{}, i + 2
+
+		if i < len(p.cmd)-2 && p.cmd[i+2] == '>' {
+			p.state.parts = append(p.state.parts, "2>>")
+			return strings.Builder{}, i + 3
+		} else {
+			p.state.parts = append(p.state.parts, "2>")
+			return strings.Builder{}, i + 2
+		}
 	} else {
 		token.WriteRune(c)
 		return *token, i + 1

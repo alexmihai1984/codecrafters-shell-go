@@ -147,31 +147,32 @@ func TestStdoutAppendRedirectionWhenCommandFails(t *testing.T) {
 	expectFileContent(t, outputFile, []string{"old contents\n"})
 }
 
-//	func TestStderrRedirectImmediatelyAfterStdoutRedirect(t *testing.T) {
-//		dir := t.TempDir()
-//		outputFile := filepath.Join(dir, "output.txt")
-//
-//		stdout, stderr := runShell(
-//			t,
-//			[]string{
-//				"echo hello > 2> " + outputFile,
-//				"exit",
-//			},
-//		)
-//
-//		expectStdout(
-//			t,
-//			stdout,
-//			[]string{
-//				"$ nsh: syntax error near unexpected token `2'",
-//				"$ ",
-//			},
-//		)
-//
-//		expectStderr(t, stderr, []string{})
-//
-//		expectNoFile(t, outputFile)
-//	}
+func TestStderrAppendRedirectImmediatelyAfterStdoutRedirect(t *testing.T) {
+	dir := t.TempDir()
+	outputFile := filepath.Join(dir, "output.txt")
+
+	stdout, stderr := runShell(
+		t,
+		[]string{
+			"echo hello >> 2>> " + outputFile,
+			"exit",
+		},
+	)
+
+	expectStdout(
+		t,
+		stdout,
+		[]string{
+			"$ nsh: syntax error near unexpected token `2'",
+			"$ ",
+		},
+	)
+
+	expectStderr(t, stderr, []string{})
+
+	expectNoFile(t, outputFile)
+}
+
 func TestMultipleStdoutAppendRedirects(t *testing.T) {
 	dir := t.TempDir()
 	outputFile1 := filepath.Join(dir, "output1.txt")

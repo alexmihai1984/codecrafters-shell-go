@@ -26,10 +26,13 @@ func TestStderrRedirection(t *testing.T) {
 			dir := t.TempDir()
 			outputFile := filepath.Join(dir, "output.txt")
 
-			stdout, stderr := runShell(t, []string{
-				"cat does-not-exist" + tt.redirection + outputFile,
-				"exit",
-			})
+			stdout, stderr := runShell(
+				t,
+				[]string{
+					"cat does-not-exist" + tt.redirection + outputFile,
+					"exit",
+				},
+			)
 
 			expectStdout(
 				t,
@@ -151,7 +154,7 @@ func TestMultipleStderrRedirections(t *testing.T) {
 	expectFileContent(t, outputFile2, []string{"cat: does-not-exits: No such file or directory\n"})
 }
 
-func TestRedirectStderrWithoutCommand(t *testing.T) {
+func TestStderrRedirectionWithoutCommand(t *testing.T) {
 	dir := t.TempDir()
 	outputFile := filepath.Join(dir, "output.txt")
 

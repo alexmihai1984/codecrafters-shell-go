@@ -91,6 +91,8 @@ func (interpreter *interpreter) getRedirectType(s string) redirectType {
 		return StdoutAppend
 	} else if interpreter.isStderrRedirect(s) {
 		return Stderr
+	} else if interpreter.isStderrAppendRedirect(s) {
+		return StderrAppend
 	} else {
 		return None
 	}
@@ -98,7 +100,8 @@ func (interpreter *interpreter) getRedirectType(s string) redirectType {
 func (interpreter *interpreter) isRedirect(s string) bool {
 	return interpreter.isStdoutRedirect(s) ||
 		interpreter.isStdoutAppendRedirect(s) ||
-		interpreter.isStderrRedirect(s)
+		interpreter.isStderrRedirect(s) ||
+		interpreter.isStderrAppendRedirect(s)
 }
 
 func (interpreter *interpreter) isStdoutRedirect(s string) bool {
@@ -111,4 +114,8 @@ func (interpreter *interpreter) isStdoutAppendRedirect(s string) bool {
 
 func (interpreter *interpreter) isStderrRedirect(s string) bool {
 	return s == "2>"
+}
+
+func (interpreter *interpreter) isStderrAppendRedirect(s string) bool {
+	return s == "2>>"
 }

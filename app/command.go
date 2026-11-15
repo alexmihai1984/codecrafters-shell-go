@@ -51,7 +51,7 @@ func (c command) execute() {
 	for _, redirect := range c.redirects {
 		var file *os.File
 		var err error
-		if redirect.redirectType == StdoutAppend {
+		if redirect.redirectType == StdoutAppend || redirect.redirectType == StderrAppend {
 			file, err = os.OpenFile(redirect.file, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 			if err != nil {
 				fmt.Print("nsh: ", redirect.file, ": No such file or directory\n")
@@ -69,7 +69,7 @@ func (c command) execute() {
 		switch redirect.redirectType {
 		case Stdout, StdoutAppend:
 			stdout = file
-		case Stderr:
+		case Stderr, StderrAppend:
 			stderr = file
 		}
 	}

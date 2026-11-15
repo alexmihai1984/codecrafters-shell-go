@@ -53,7 +53,7 @@ func expectStdout(t *testing.T, stdout string, lines []string) {
 
 func expectStdoutContains(t *testing.T, stdout string, text string) {
 	if !strings.Contains(stdout, text) {
-		t.Errorf("expected stdout to contain %q, got: %q", text, stdout)
+		t.Errorf("unexpected stdout:\nshould contain: %q\ngot:            %q", text, stdout)
 	}
 }
 
@@ -73,7 +73,7 @@ func expectFileContent(t *testing.T, filepath string, lines []string) {
 
 	expectedContent := strings.Join(lines, "\n")
 	if string(content) != expectedContent {
-		t.Errorf("expected %q, got %q", expectedContent, string(content))
+		t.Errorf("unexpected file content '%q':\nexpected: %q\ngot:      %q", filepath, expectedContent, string(content))
 	}
 }
 
@@ -97,6 +97,6 @@ func createFile(t *testing.T, filepath string, lines []string, perm os.FileMode)
 	content := strings.Join(lines, "\n")
 
 	if err := os.WriteFile(filepath, []byte(content), perm); err != nil {
-		t.Fatalf("failed to create executable: %v", err)
+		t.Fatalf("failed to create file: %v", err)
 	}
 }
