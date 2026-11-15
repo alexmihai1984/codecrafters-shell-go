@@ -73,7 +73,7 @@ func expectFileContent(t *testing.T, filepath string, lines []string) {
 
 	expectedContent := strings.Join(lines, "\n")
 	if string(content) != expectedContent {
-		t.Errorf("expected %q, got %q", "hello1\n", string(content))
+		t.Errorf("expected %q, got %q", expectedContent, string(content))
 	}
 }
 

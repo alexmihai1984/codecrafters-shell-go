@@ -49,20 +49,29 @@ func (c command) execute() {
 	stderr := os.Stderr
 
 	for _, redirect := range c.redirects {
-		file, err := os.Create(redirect.file)
-		if err != nil {
-			fmt.Print("nsh: ", redirect.file, ": No such file or directory\n")
-			return
+		var file *os.File
+		var err error
+		if redirect.redirectType == StdoutAppend {
+			file, err = os.OpenFile(redirect.file, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+			if err != nil {
+				fmt.Print("nsh: ", redirect.file, ": No such file or directory\n")
+				return
+			}
+		} else {
+			file, err = os.Create(redirect.file)
+			if err != nil {
+				fmt.Print("nsh: ", redirect.file, ": No such file or directory\n")
+				return
+			}
 		}
+		defer file.Close()
 
 		switch redirect.redirectType {
-		case Stdout:
+		case Stdout, StdoutAppend:
 			stdout = file
 		case Stderr:
 			stderr = file
 		}
-
-		defer file.Close()
 	}
 
 	c.executable.setStdout(stdout)

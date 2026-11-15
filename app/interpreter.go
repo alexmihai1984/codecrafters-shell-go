@@ -28,7 +28,7 @@ func (interpreter *interpreter) interpret() command {
 	res := command{}
 	previousOneWasRedirect := false
 	for i, token := range interpreter.parts {
-		if isRedirect(token) {
+		if interpreter.isRedirect(token) {
 			previousOneWasRedirect = true
 			redirectType := interpreter.getRedirectType(token)
 			file, err := interpreter.getRedirectFile(i + 1)
@@ -77,7 +77,7 @@ func (interpreter *interpreter) getRedirectFile(i int) (string, error) {
 		return "", errors.New("nsh: syntax error near unexpected token `newline'")
 	}
 
-	if isRedirect(interpreter.parts[i]) {
+	if interpreter.isRedirect(interpreter.parts[i]) {
 		return "", errors.New("nsh: syntax error near unexpected token `" + string(interpreter.parts[i][0]) + "'")
 	}
 
@@ -85,22 +85,30 @@ func (interpreter *interpreter) getRedirectFile(i int) (string, error) {
 }
 
 func (interpreter *interpreter) getRedirectType(s string) redirectType {
-	if isStdoutRedirect(s) {
+	if interpreter.isStdoutRedirect(s) {
 		return Stdout
-	} else if isStderrRedirect(s) {
+	} else if interpreter.isStdoutAppendRedirect(s) {
+		return StdoutAppend
+	} else if interpreter.isStderrRedirect(s) {
 		return Stderr
 	} else {
 		return None
 	}
 }
-func isRedirect(s string) bool {
-	return isStdoutRedirect(s) || isStderrRedirect(s)
+func (interpreter *interpreter) isRedirect(s string) bool {
+	return interpreter.isStdoutRedirect(s) ||
+		interpreter.isStdoutAppendRedirect(s) ||
+		interpreter.isStderrRedirect(s)
 }
 
-func isStdoutRedirect(s string) bool {
+func (interpreter *interpreter) isStdoutRedirect(s string) bool {
 	return s == ">" || s == "1>"
 }
 
-func isStderrRedirect(s string) bool {
+func (interpreter *interpreter) isStdoutAppendRedirect(s string) bool {
+	return s == ">>" || s == "1>>"
+}
+
+func (interpreter *interpreter) isStderrRedirect(s string) bool {
 	return s == "2>"
 }

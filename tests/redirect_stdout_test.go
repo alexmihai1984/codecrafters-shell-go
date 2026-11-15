@@ -36,10 +36,13 @@ func TestStdoutRedirection(t *testing.T) {
 
 			command := "/bin/echo hello" + tt.redirection + outputFile
 
-			stdout, stderr := runShell(t, []string{
-				command,
-				"exit",
-			})
+			stdout, stderr := runShell(
+				t,
+				[]string{
+					command,
+					"exit",
+				},
+			)
 
 			expectStdout(
 				t,
@@ -60,10 +63,13 @@ func TestStdoutRedirectionWithTrailingOneInput(t *testing.T) {
 	dir := t.TempDir()
 	outputFile := filepath.Join(dir, "output.txt")
 
-	stdout, stderr := runShell(t, []string{
-		"echo hello1>" + outputFile,
-		"exit",
-	})
+	stdout, stderr := runShell(
+		t,
+		[]string{
+			"echo hello1>" + outputFile,
+			"exit",
+		},
+	)
 
 	expectStdout(
 		t,
@@ -164,7 +170,7 @@ func TestMultipleStdoutRedirects(t *testing.T) {
 	expectFileContent(t, outputFile2, []string{"hello\n"})
 }
 
-func TestRedirectStdoutWithoutCommand(t *testing.T) {
+func TestStdoutRedirectionWithoutCommand(t *testing.T) {
 	dir := t.TempDir()
 	outputFile := filepath.Join(dir, "output.txt")
 
