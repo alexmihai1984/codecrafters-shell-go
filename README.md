@@ -14,3 +14,17 @@ go run ./app
 go test -v ./tests/
 go test -v ./tests/ -run 'TestPwd'
 ```
+
+## Linters
+
+Install:
+
+```bash
+curl -sSfL https://golangci-lint.run/install.sh | sh -s v2.15.0
+```
+
+Run:
+
+```bash
+./bin/golangci-lint run
+```

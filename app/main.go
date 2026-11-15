@@ -24,7 +24,7 @@ func main() {
 }
 
 func handleCmd(cmd string) {
-	var command command = parseCmd(cmd)
+	var command = parseCmd(cmd)
 
 	command.execute()
 }

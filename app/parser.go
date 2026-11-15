@@ -8,12 +8,7 @@ import (
 
 type parser struct {
 	cmd   string
-	state parserState
-}
-
-type parserState struct {
-	parts       []string
-	currentWord strings.Builder
+	parts []string
 }
 
 func buildParser(cmd string) parser {
@@ -27,11 +22,11 @@ func (p *parser) parse() []string {
 	for i := 0; i < len(p.cmd); {
 		token, i = p.readAt(i)
 		if token != "" {
-			p.state.parts = append(p.state.parts, token)
+			p.parts = append(p.parts, token)
 		}
 	}
 
-	return p.state.parts
+	return p.parts
 }
 
 func (p *parser) readAt(i int) (string, int) {
@@ -46,17 +41,18 @@ func (p *parser) readUntilWhitespace(i int) (string, int) {
 
 	c, size := utf8.DecodeRuneInString(p.cmd[i:])
 	for i < len(p.cmd) && !unicode.IsSpace(c) {
-		if c == '\'' {
+		switch c {
+		case '\'':
 			i = p.readSingleQuotesAt(i, &token)
-		} else if c == '"' {
+		case '"':
 			i = p.readDoubleQuotesAt(i, &token)
-		} else if c == '\\' {
+		case '\\':
 			i = p.readEscapedCharAt(i, &token)
-		} else if c == '>' || c == '1' {
+		case '>', '1':
 			token, i = p.readStdRedirect(i, &token)
-		} else if c == '2' {
+		case '2':
 			token, i = p.readErrRedirect(i, &token)
-		} else {
+		default:
 			token.WriteRune(c)
 			i += size
 		}
@@ -71,14 +67,14 @@ func (p *parser) readErrRedirect(i int, token *strings.Builder) (strings.Builder
 	c, _ := utf8.DecodeRuneInString(p.cmd[i:])
 	if i < len(p.cmd)-1 && p.cmd[i+1] == '>' && token.Len() == 0 {
 		if token.Len() > 0 {
-			p.state.parts = append(p.state.parts, token.String())
+			p.parts = append(p.parts, token.String())
 		}
 
 		if i < len(p.cmd)-2 && p.cmd[i+2] == '>' {
-			p.state.parts = append(p.state.parts, "2>>")
+			p.parts = append(p.parts, "2>>")
 			return strings.Builder{}, i + 3
 		} else {
-			p.state.parts = append(p.state.parts, "2>")
+			p.parts = append(p.parts, "2>")
 			return strings.Builder{}, i + 2
 		}
 	} else {
@@ -91,14 +87,14 @@ func (p *parser) readStdRedirect(i int, token *strings.Builder) (strings.Builder
 	c, _ := utf8.DecodeRuneInString(p.cmd[i:])
 	if c == '>' {
 		if token.Len() > 0 {
-			p.state.parts = append(p.state.parts, token.String())
+			p.parts = append(p.parts, token.String())
 		}
 
 		if i < len(p.cmd)-1 && p.cmd[i+1] == '>' {
-			p.state.parts = append(p.state.parts, ">>")
+			p.parts = append(p.parts, ">>")
 			return strings.Builder{}, i + 2
 		} else {
-			p.state.parts = append(p.state.parts, ">")
+			p.parts = append(p.parts, ">")
 			return strings.Builder{}, i + 1
 		}
 	}
@@ -109,14 +105,14 @@ func (p *parser) readStdRedirect(i int, token *strings.Builder) (strings.Builder
 
 	if i < len(p.cmd)-1 && p.cmd[i+1] == '>' && token.Len() == 0 {
 		if token.Len() > 0 {
-			p.state.parts = append(p.state.parts, token.String())
+			p.parts = append(p.parts, token.String())
 		}
 
 		if i < len(p.cmd)-2 && p.cmd[i+2] == '>' {
-			p.state.parts = append(p.state.parts, "1>>")
+			p.parts = append(p.parts, "1>>")
 			return strings.Builder{}, i + 3
 		} else {
-			p.state.parts = append(p.state.parts, "1>")
+			p.parts = append(p.parts, "1>")
 			return strings.Builder{}, i + 2
 		}
 	}
